@@ -1,0 +1,11 @@
+/tmp/
+/build/INTEG.COM*
+/build/TEST.*
+/build/test.conf
+/build/RESULT.TXT
+/build/casos.txt
+/build/*.debug
+/build/*.list
+/build/*.~asm
+/build/*log*
+__pycache__/
