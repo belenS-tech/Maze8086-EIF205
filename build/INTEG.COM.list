@@ -1,0 +1,358 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+INTEG.COM -- emu8086 assembler version: 4.08  
+ 
+[ 29/10/2026  --  19:53:29 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       ; MAZE8086 - Integracion de interfaz, movimiento y reglas del equipo.
+[   2]        :                                       ; Compilar como COM en EMU8086 y ejecutar MAZE.COM en DOSBox.
+[   3]        :                                       org 100h
+[   4]    0100: E9 03 0A                              jmp inicio
+[   5]        :                                       
+[   6]        :                                       ANCHO equ 20
+[   7]        :                                       ALTO equ 15
+[   8]        :                                       TOTAL equ ANCHO*ALTO
+[   9]        :                                       MONEDAS_TOTAL equ 5
+[  10]        :                                       
+[  11]        :                                       ; Datos compartidos. Coordenadas desde cero y puntuacion sin signo.
+[  12]    0103: 01                                    jugador_x db 1
+[  13]    0104: 01                                    jugador_y db 1
+[  14]    0105: 03                                    vidas db 3
+[  15]    0106: 05                                    monedas db MONEDAS_TOTAL
+[  16]    0107: 00 00                                 puntos dw 0
+[  17]    0109: 00 00                                 record_max dw 0
+[  18]    010B: 00 00                                 movimientos dw 0
+[  19]        :                                       ; 0 menu, 1 jugando, 2 victoria, 3 derrota, 4 pausa.
+[  20]    010D: 00                                    estado db 0
+[  21]        :                                       
+[  22]        :                                       ; Mapa original inmutable para restaurar monedas y trampas al reiniciar.
+[  23]        :                                       ; # pared, C moneda, X trampa consumible, S salida.
+[  24]    010E: 23 23 23 23 23 23 23 23 23 23 23 23   mapa_original db '####################'
+                23 23 23 23 23 23 23 23             
+[  25]    0122: 23 20 20 20 43 20 20 23 20 20 20 20   db '#   C  #     C     #'
+                20 43 20 20 20 20 20 23             
+[  26]    0136: 23 20 23 23 23 20 20 23 20 23 23 23   db '# ###  # #### ###  #'
+                23 20 23 23 23 20 20 23             
+[  27]    014A: 23 20 20 58 23 20 20 20 20 23 20 20   db '#  X#    #    #    #'
+                20 20 23 20 20 20 20 23             
+[  28]    015E: 23 23 23 20 23 23 23 23 20 23 20 23   db '### #### # ## # ####'
+                23 20 23 20 23 23 23 23             
+[  29]    0172: 23 20 20 20 43 20 20 20 20 23 20 20   db '#   C    #  # #    #'
+                23 20 23 20 20 20 20 23             
+[  30]    0186: 23 20 23 23 23 23 23 23 20 23 23 20   db '# ###### ## # #### #'
+                23 20 23 23 23 23 20 23             
+[  31]    019A: 23 20 20 20 20 20 20 23 58 20 20 20   db '#      #X   #      #'
+                23 20 20 20 20 20 20 23             
+[  32]    01AE: 23 20 23 23 23 23 20 23 23 23 23 23   db '# #### ########### #'
+                23 23 23 23 23 23 20 23             
+[  33]    01C2: 23 20 23 20 20 20 20 23 20 20 20 43   db '# #    #   C       #'
+                20 20 20 20 20 20 20 23             
+[  34]    01D6: 23 20 23 20 23 23 23 23 20 23 23 23   db '# # #### ####### ###'
+                23 23 23 23 20 23 23 23             
+[  35]    01EA: 23 20 23 20 20 20 20 20 20 23 20 20   db '# #      #     # X #'
+                20 20 20 23 20 58 20 23             
+[  36]    01FE: 23 20 23 23 23 23 23 23 20 23 20 23   db '# ###### # ### ### #'
+                23 23 20 23 23 23 20 23             
+[  37]    0212: 23 20 20 20 43 20 20 20 20 20 20 23   db '#   C      #      S#'
+                20 20 20 20 20 20 53 23             
+[  38]    0226: 23 23 23 23 23 23 23 23 23 23 23 23   db '####################'
+                23 23 23 23 23 23 23 23             
+[  39]    023A: 20 20 20 20 20 20 20 20 20 20 20 20   mapa db TOTAL dup(' ')
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                                                    
+[  40]        :                                       
+[  41]        :                                       include 'interfaz.inc'
+[  42]        :                                       include 'movimiento.inc'
+[  43]        :                                       include 'juego.inc'
+[  44]    0366: 4D 20 41 20 5A 20 45 20 20 2F 20 20   DEFINE_INTERFACE
+                38 20 30 20 38 20 36 00 45 4E 43 55 
+                45 4E 54 52 41 20 54 55 20 43 41 4D 
+                49 4E 4F 00 45 49 46 32 30 35 20 20 
+                2F 20 20 41 52 51 55 49 54 45 43 54 
+                55 52 41 20 44 45 20 43 4F 4D 50 55 
+                54 41 44 4F 52 41 53 00 5B 31 5D 20 
+                20 45 4E 54 52 41 52 20 41 4C 20 4C 
+                41 42 45 52 49 4E 54 4F 00 5B 45 53 
+                43 5D 20 20 53 41 4C 49 52 00 57 41 
+                53 44 2F 46 6C 65 63 68 61 73 3A 20 
+                6D 6F 76 65 72 20 20 50 3A 20 70 61 
+                75 73 61 20 20 51 2F 45 53 43 3A 20 
+                6D 65 6E 75 00 52 65 63 6F 67 65 20 
+                74 6F 64 61 73 20 6C 61 73 20 6D 6F 
+                6E 65 64 61 73 20 79 20 6C 6C 65 67 
+                61 20 61 20 6C 61 20 73 61 6C 69 64 
+                61 20 53 2E 00 43 3A 20 6D 6F 6E 65 
+                64 61 20 28 2B 31 30 29 20 20 20 58 
+                3A 20 74 72 61 6D 70 61 20 28 2D 31 
+                20 76 69 64 61 29 20 20 20 53 3A 20 
+                73 61 6C 69 64 61 20 28 2B 35 30 29 
+                00 54 55 20 52 45 43 4F 52 52 49 44 
+                4F 00 50 55 4E 54 4F 53 00 52 45 43 
+                4F 52 44 00 56 49 44 41 53 00 4D 4F 
+                56 49 4D 49 45 4E 54 4F 53 00 40 20 
+                20 54 55 20 4A 55 47 41 44 4F 52 00 
+                53 20 20 53 41 4C 49 44 41 00 58 20 
+                20 54 52 41 4D 50 41 00 4D 4F 4E 45 
+                44 41 53 20 52 45 53 54 41 4E 54 45 
+                53 00 4C 20 41 20 42 20 45 20 52 20 
+                49 20 4E 20 54 20 4F 20 20 53 20 55 
+                20 50 20 45 20 52 20 41 20 44 20 4F 
+                00 45 6E 63 6F 6E 74 72 61 73 74 65 
+                20 6C 61 20 73 61 6C 69 64 61 2E 20 
+                42 75 65 6E 20 72 65 63 6F 72 72 69 
+                64 6F 2E 00 46 20 49 20 4E 20 20 44 
+                20 45 20 20 4C 20 41 20 20 50 20 41 
+                20 52 20 54 20 49 20 44 20 41 00 53 
+                65 20 61 67 6F 74 61 72 6F 6E 20 74 
+                75 73 20 76 69 64 61 73 2E 20 49 6E 
+                74 65 6E 74 61 6C 6F 20 6F 74 72 61 
+                20 76 65 7A 2E 00 50 20 41 20 55 20 
+                53 20 41 00 54 75 20 72 65 63 6F 72 
+                72 69 64 6F 20 74 65 20 65 73 70 65 
+                72 61 2E 00 52 3A 20 72 65 69 6E 69 
+                63 69 61 72 20 20 20 4D 2F 51 3A 20 
+                6D 65 6E 75 20 20 20 45 53 43 3A 20 
+                73 61 6C 69 72 00 50 61 72 74 69 64 
+                61 20 74 65 72 6D 69 6E 61 64 61 3A 
+                20 52 20 72 65 69 6E 69 63 69 61 20 
+                63 6F 6E 73 65 72 76 61 6E 64 6F 20 
+                74 75 20 72 65 63 6F 72 64 2E 00 50 
+                2F 45 4E 54 45 52 3A 20 63 6F 6E 74 
+                69 6E 75 61 72 20 20 20 51 2F 45 53 
+                43 3A 20 6D 65 6E 75 00 30 30 30 30 
+                30 00 50 51 B8 03 00 CD 10 B4 01 B9 
+                00 20 CD 10 59 58 C3 50 B8 03 00 CD 
+                10 58 C3 50 53 52 33 C0 8A C6 BB A0 
+                00 F7 E3 8B F8 5A 33 C0 8A C2 D1 E0 
+                03 F8 5B 58 C3 50 51 57 06 50 B8 00 
+                B8 8E C0 58 E8 D8 FF 8A E3 FC F3 AB 
+                07 5F 59 58 C3 50 56 57 06 B8 00 B8 
+                8E C0 E8 C2 FF FC AC 0A C0 74 05 8A 
+                E3 AB EB F6 07 5F 5E 58 C3 50 53 51 
+                52 56 57 52 53 BF 06 06 BB 0A 00 B9 
+                05 00 33 D2 F7 F3 80 C2 30 88 15 4F 
+                E2 F4 5B 5A BE 02 06 E8 BF FF 5F 5E 
+                5A 59 5B 58 C3 50 53 51 52 33 D2 B0 
+                20 B3 07 B9 D0 07 E8 90 FF B3 30 B9 
+                50 00 E8 88 FF B6 18 B3 17 E8 81 FF 
+                5A 59 5B 58 C3 50 53 51 52 56 E8 D4 
+                FF B6 00 B2 03 BE 8E 03 B3 30 E8 80 
+                FF B6 06 B2 1D BE 66 03 B3 0B E8 74 
+                FF B6 08 B2 1E BE 7A 03 B3 0F E8 68 
+                FF B6 0C B2 1A BE B6 03 B3 0A E8 5C 
+                FF B6 0E B2 1A BE CF 03 B3 07 E8 50 
+                FF B6 12 B2 0F BE 07 04 B3 07 E8 44 
+                FF B6 14 B2 11 BE DC 03 B3 08 E8 38 
+                FF B6 18 B2 03 BE 37 04 B3 17 E8 2C 
+                FF 5E 5A 59 5B 58 C3 50 53 51 52 56 
+                E8 66 FF B6 00 B2 03 BE 66 03 B3 30 
+                E8 12 FF B6 03 B2 05 BE 07 04 B3 07 
+                E8 06 FF BE 3A 02 B6 06 B2 05 AC B3 
+                07 3C 23 74 10 3C 53 74 12 3C 43 74 
+                12 3C 58 74 12 B0 20 EB 10 B0 DB B3 
+                09 EB 0A B3 0A EB 06 B3 0E EB 02 B3 
+                0C B9 02 00 E8 BA FE 80 C2 02 80 FA 
+                2D 72 CB FE C6 80 FE 15 72 C2 8A 36 
+                04 01 80 C6 06 8A 16 03 01 D0 E2 80 
+                C2 05 B0 40 B3 0F B9 01 00 E8 91 FE 
+                E8 1E 00 B6 16 B2 05 BE DC 03 B3 07 
+                E8 9A FE B6 18 B2 03 BE 37 04 B3 17 
+                E8 8E FE 5E 5A 59 5B 58 C3 50 53 52 
+                56 B6 06 B2 33 BE 6F 04 B3 0B E8 78 
+                FE B6 08 B2 33 BE 7C 04 B3 07 E8 6C 
+                FE A1 07 01 BA 33 09 B3 0F E8 7D FE 
+                B6 0B B2 33 BE 83 04 B3 07 E8 55 FE 
+                A1 09 01 BA 33 0C B3 0E E8 66 FE B6 
+                0E B2 33 BE 8A 04 B3 07 E8 3E FE 33 
+                C0 A0 05 01 BA 33 0F B3 0A E8 4D FE 
+                B6 11 B2 33 BE 90 04 B3 07 E8 25 FE 
+                A1 0B 01 BA 33 12 B3 0F E8 36 FE B6 
+                13 B2 33 BE BE 04 B3 07 E8 0E FE 33 
+                C0 A0 06 01 BA 33 14 B3 0E E8 1D FE 
+                B6 15 B2 33 BE 9C 04 B3 0F E8 F5 FD 
+                B6 16 B2 33 BE AA 04 B3 0A E8 E9 FD 
+                B6 17 B2 33 BE B4 04 B3 0C E8 DD FD 
+                5E 5A 5B 58 C3 50 53 51 52 56 E8 18 
+                FE B6 00 B2 03 BE 66 03 B3 30 E8 C4 
+                FD 3C 00 74 38 3C 01 74 1A B6 07 B2 
+                15 BE 1A 05 B3 0C E8 B0 FD B6 0A B2 
+                13 BE 39 05 B3 07 E8 A4 FD EB 32 B6 
+                07 B2 15 BE D0 04 B3 0A E8 96 FD B6 
+                0A B2 14 BE F3 04 B3 07 E8 8A FD EB 
+                18 B6 07 B2 22 BE 64 05 B3 0B E8 7C 
+                FD B6 0A B2 1C BE 6E 05 B3 07 E8 70 
+                FD B6 0D B2 17 BE 7C 04 B3 07 E8 64 
+                FD A1 07 01 BA 17 0E B3 0F E8 75 FD 
+                B6 0D B2 2F BE 83 04 B3 07 E8 4D FD 
+                A1 09 01 BA 2F 0E B3 0E E8 5E FD 80 
+                3E 0D 01 04 74 1A B6 13 B2 13 BE 86 
+                05 B3 07 E8 2F FD B6 18 B2 03 BE AC 
+                05 B3 17 E8 23 FD EB 18 B6 13 B2 17 
+                BE E1 05 B3 0B E8 15 FD B6 18 B2 03 
+                BE E1 05 B3 17 E8 09 FD 5E 5A 59 5B 
+                58 C3 50 B0 00 E8 25 FF 58 C3 50 B0 
+                01 E8 1D FF 58 C3 50 B0 02 E8 15 FF 
+                58 C3                               
+[  45]    0968: 50 53 51 52 56 80 3E 0D 01 01 74 03   DEFINE_MOVIMIENTO
+                E9 C8 00 8A 1E 03 01 8A 3E 04 01 80 
+                FC 48 74 30 80 FC 50 74 2F 80 FC 4B 
+                74 2E 80 FC 4D 74 2D 3C 1B 74 34 0C 
+                20 3C 77 74 17 3C 73 74 17 3C 61 74 
+                17 3C 64 74 17 3C 70 74 17 3C 71 74 
+                1A E9 8B 00 FE CF EB 1A FE C7 EB 16 
+                FE CB EB 12 FE C3 EB 0E C6 06 0D 01 
+                04 EB 74 C6 06 0D 01 00 EB 6D 80 FB 
+                14 73 68 80 FF 0F 73 63 33 C0 8A C7 
+                B1 14 F6 E1 32 FF 03 C3 8B F0 8A 84 
+                3A 02 3C 23 74 4D 3C 53 74 2F 88 1E 
+                03 01 8B C6 B1 14 F6 F1 A2 04 01 E8 
+                3F 00 80 BC 3A 02 43 74 09 80 BC 3A 
+                02 58 74 07 EB 08 E8 76 00 EB 03 E8 
+                8E 00 C6 84 3A 02 20 EB 1A 80 3E 06 
+                01 00 75 13 88 1E 03 01 8B C6 B1 14 
+                F6 F1 A2 04 01 E8 09 00 E8 9A 00 5E 
+                5A 59 5B 58 C3 83 3E 0B 01 FF 74 04 
+                FF 06 0B 01 C3                      
+[  46]    0A51: 50 51 56 57 06 1E 07 BE 0E 01 BF 3A   DEFINE_JUEGO
+                02 B9 2C 01 FC F3 A4 C6 06 03 01 01 
+                C6 06 04 01 01 C6 06 05 01 03 C6 06 
+                06 01 05 C7 06 07 01 00 00 C7 06 0B 
+                01 00 00 C6 06 0D 01 01 07 5F 5E 59 
+                58 C3 50 80 3E 0D 01 01 75 13 80 3E 
+                06 01 00 74 0C FE 0E 06 01 83 06 07 
+                01 0A E8 4D 00 58 C3 50 80 3E 0D 01 
+                01 75 23 80 3E 05 01 00 74 17 FE 0E 
+                05 01 80 3E 05 01 00 74 0C C6 06 03 
+                01 01 C6 06 04 01 01 EB 05 C6 06 0D 
+                01 03 58 C3 50 80 3E 0D 01 01 75 14 
+                80 3E 06 01 00 75 0D 83 06 07 01 32 
+                E8 07 00 C6 06 0D 01 02 58 C3 50 A1 
+                07 01 3B 06 09 01 76 03 A3 09 01 58 
+                C3                                  
+[  47]        :                                       
+[  48]    0B06:                                       inicio:
+[  49]    0B06: 0E                                    push cs
+[  50]    0B07: 1F                                    pop ds
+[  51]    0B08: FC                                    cld
+[  52]    0B09: E8 FC FA                              call ui_init
+[  53]        :                                       
+[  54]        :                                       ; Cada manejador espera teclado sin consumir CPU en bucles de retraso.
+[  55]    0B0C:                                       mostrar_menu:
+[  56]    0B0C: C6 06 0D 01 00                        mov estado,0
+[  57]    0B11: E8 AB FB                              call ui_menu
+[  58]    0B14:                                       esperar_menu:
+[  59]    0B14: B4 00                                 mov ah,0
+[  60]    0B16: CD 16                                 int 16h
+[  61]    0B18: 3C 1B                                 cmp al,27
+[  62]    0B1A: 75 02                                 jne menu_comprobar_inicio
+[  63]    0B1C: EB 7A                                 jmp salir
+[  64]    0B1E:                                       menu_comprobar_inicio:
+[  65]    0B1E: 3C 31                                 cmp al,'1'
+[  66]    0B20: 75 F2                                 jne esperar_menu
+[  67]    0B22:                                       nueva_partida:
+[  68]    0B22: E8 2C FF                              call reiniciar_juego
+[  69]        :                                       
+[  70]    0B25:                                       dibujar_partida:
+[  71]    0B25: E8 05 FC                              call ui_board
+[  72]    0B28:                                       esperar_jugada:
+[  73]    0B28: B4 00                                 mov ah,0
+[  74]    0B2A: CD 16                                 int 16h
+[  75]    0B2C: E8 39 FE                              call procesar_movimiento
+[  76]    0B2F: 80 3E 0D 01 00                        cmp estado,0
+[  77]    0B34: 75 02                                 jne comprobar_pausa
+[  78]    0B36: EB D4                                 jmp mostrar_menu
+[  79]    0B38:                                       comprobar_pausa:
+[  80]    0B38: 80 3E 0D 01 04                        cmp estado,4
+[  81]    0B3D: 75 02                                 jne comprobar_victoria
+[  82]    0B3F: EB 18                                 jmp mostrar_pausa
+[  83]    0B41:                                       comprobar_victoria:
+[  84]    0B41: 80 3E 0D 01 02                        cmp estado,2
+[  85]    0B46: 75 05                                 jne comprobar_derrota
+[  86]    0B48: E8 0D FE                              call ui_win
+[  87]    0B4B: EB 30                                 jmp esperar_final
+[  88]    0B4D:                                       comprobar_derrota:
+[  89]    0B4D: 80 3E 0D 01 03                        cmp estado,3
+[  90]    0B52: 75 D1                                 jne dibujar_partida
+[  91]    0B54: E8 09 FE                              call ui_lose
+[  92]    0B57: EB 24                                 jmp esperar_final
+[  93]        :                                       
+[  94]    0B59:                                       mostrar_pausa:
+[  95]    0B59: E8 F4 FD                              call ui_pause
+[  96]    0B5C:                                       esperar_pausa:
+[  97]    0B5C: B4 00                                 mov ah,0
+[  98]    0B5E: CD 16                                 int 16h
+[  99]    0B60: 3C 1B                                 cmp al,27
+[ 100]    0B62: 75 02                                 jne pausa_comprobar_enter
+[ 101]    0B64: EB A6                                 jmp mostrar_menu
+[ 102]    0B66:                                       pausa_comprobar_enter:
+[ 103]    0B66: 3C 0D                                 cmp al,13
+[ 104]    0B68: 74 0C                                 je continuar_partida
+[ 105]    0B6A: 0C 20                                 or al,20h
+[ 106]    0B6C: 3C 71                                 cmp al,'q'
+[ 107]    0B6E: 75 02                                 jne pausa_comprobar_p
+[ 108]    0B70: EB 9A                                 jmp mostrar_menu
+[ 109]    0B72:                                       pausa_comprobar_p:
+[ 110]    0B72: 3C 70                                 cmp al,'p'
+[ 111]    0B74: 75 E6                                 jne esperar_pausa
+[ 112]    0B76:                                       continuar_partida:
+[ 113]    0B76: C6 06 0D 01 01                        mov estado,1
+[ 114]    0B7B: EB A8                                 jmp dibujar_partida
+[ 115]        :                                       
+[ 116]    0B7D:                                       esperar_final:
+[ 117]    0B7D: B4 00                                 mov ah,0
+[ 118]    0B7F: CD 16                                 int 16h
+[ 119]    0B81: 3C 1B                                 cmp al,27
+[ 120]    0B83: 74 13                                 je salir
+[ 121]    0B85: 0C 20                                 or al,20h
+[ 122]    0B87: 3C 72                                 cmp al,'r'
+[ 123]    0B89: 75 02                                 jne final_comprobar_menu
+[ 124]    0B8B: EB 95                                 jmp nueva_partida
+[ 125]    0B8D:                                       final_comprobar_menu:
+[ 126]    0B8D: 3C 6D                                 cmp al,'m'
+[ 127]    0B8F: 74 04                                 je final_menu
+[ 128]    0B91: 3C 71                                 cmp al,'q'
+[ 129]    0B93: 75 E8                                 jne esperar_final
+[ 130]    0B95:                                       final_menu:
+[ 131]    0B95: E9 74 FF                              jmp mostrar_menu
+[ 132]        :                                       
+[ 133]    0B98:                                       salir:
+[ 134]    0B98: E8 7E FA                              call ui_shutdown
+[ 135]    0B9B: B8 00 4C                              mov ax,4C00h
+[ 136]    0B9E: CD 21                                 int 21h
+[ 137]        :                                       
+[ 138]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

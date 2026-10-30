@@ -1,0 +1,1 @@
+PASS: 70 comprobaciones sobre el COM de EMU8086

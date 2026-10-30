@@ -1,0 +1,70 @@
+1. inicio: tres vidas
+2. inicio: cinco monedas
+3. inicio: cero puntos
+4. WASD: avanza una celda
+5. pared: bloquea el movimiento
+6. pared: conserva las vidas
+7. tecla no asignada: ignorada
+8. WASD en mayuscula
+9. flecha derecha
+10. moneda suma diez
+11. moneda reduce pendientes
+12. moneda no se cobra dos veces
+13. limite izquierdo sin desbordamiento
+14. limite superior sin desbordamiento
+15. limite derecho sin desbordamiento
+16. limite inferior sin desbordamiento
+17. P activa pausa
+18. pausa bloquea movimiento
+19. Q vuelve al menu
+20. ESC vuelve al menu
+21. trampa resta una vida
+22. trampa devuelve al inicio X
+23. trampa devuelve al inicio Y
+24. trampa se consume una sola vez
+25. tercera trampa agota vidas
+26. cero vidas activa derrota
+27. derrota no desborda vidas
+28. salida bloqueada con monedas pendientes
+29. salida bloqueada no cambia posicion
+30. recorrido completo llega a victoria
+31. cinco monedas y bonus de salida
+32. record actualizado
+33. victoria sin atravesar trampas
+34. victoria coloca al jugador en salida
+35. bonus de victoria no se repite
+36. reiniciar conserva record
+37. reiniciar borra puntuacion
+38. reiniciar borra movimientos
+39. reiniciar restaura mapa completo
+40. jugador visible
+41. pared azul
+42. moneda amarilla
+43. trampa roja
+44. salida verde
+45. pantalla de pausa
+46. pantalla de victoria
+47. pantalla de derrota
+48. BIOS acepta tecla para prueba de estados
+49. BIOS acepta tecla para prueba de estados
+50. BIOS acepta tecla para prueba de estados
+51. BIOS acepta tecla para prueba de estados
+52. BIOS acepta tecla para prueba de estados
+53. BIOS acepta tecla para prueba de estados
+54. BIOS acepta tecla para prueba de estados
+55. bucle real: pausa ignora D y ENTER reanuda
+56. bucle real: solo cuenta movimiento fuera de pausa
+57. bucle real: Q devuelve al menu y ESC sale
+58. BIOS acepta tecla para prueba de estados
+59. BIOS acepta tecla para prueba de estados
+60. BIOS acepta tecla para prueba de estados
+61. bucle real: R reinicia tras estado 2
+62. bucle real: R borra puntos tras estado 2
+63. bucle real: R conserva record tras estado 2
+64. BIOS acepta tecla para prueba de estados
+65. BIOS acepta tecla para prueba de estados
+66. BIOS acepta tecla para prueba de estados
+67. bucle real: R reinicia tras estado 3
+68. bucle real: R borra puntos tras estado 3
+69. bucle real: R conserva record tras estado 3
+70. pila balanceada tras todas las llamadas
