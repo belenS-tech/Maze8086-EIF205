@@ -1,3 +1,5 @@
+; Integrante 3: reglas originales, record en memoria entre partidas.
+DEFINE_JUEGO macro
 ; Preparar una partida nueva
 reiniciar_juego proc
     push ax
@@ -23,6 +25,7 @@ reiniciar_juego proc
     mov vidas,3
     mov monedas,MONEDAS_TOTAL
     mov puntos,0
+    mov movimientos,0
     mov estado,1
 
     pop es
@@ -37,6 +40,8 @@ reiniciar_juego endp
 sumar_moneda proc
     push ax
 
+    cmp estado,1
+    jne fin_moneda
     cmp monedas,0
     je fin_moneda
 
@@ -54,6 +59,8 @@ sumar_moneda endp
 perder_vida proc
     push ax
 
+    cmp estado,1
+    jne fin_perder_vida
     cmp vidas,0
     je pv_derrota
 
@@ -79,6 +86,8 @@ perder_vida endp
 ganar_partida proc
     push ax
 
+    cmp estado,1
+    jne fin_ganar
     cmp monedas,0
     jne fin_ganar
 
@@ -106,3 +115,4 @@ fin_record:
     pop ax
     ret
 actualizar_record endp
+endm
