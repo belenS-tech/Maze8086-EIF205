@@ -17,7 +17,7 @@ MAP_TOP equ 6
 MAP_LEFT equ 5
 
 ui_title db 'M A Z E  /  8 0 8 6',0
-ui_tag db 'ENCUENTRA TU CAMINO',0
+ui_tag db 'ESCAPE DEL LABERINTO',0
 ui_logo1 db '##   ##   ###   ######  #######',0
 ui_logo2 db '### ###  ## ##      ##  ##     ',0
 ui_logo3 db '## # ##  #####    ##    #####  ',0
@@ -35,19 +35,32 @@ ui_score_label db 'PUNTOS',0
 ui_record_label db 'RECORD',0
 ui_vidas_label db 'VIDAS',0
 ui_moves_label db 'MOVIMIENTOS',0
-ui_legend1 db '@  TU JUGADOR',0
+ui_legend1 db 2,'  TU JUGADOR',0
 ui_legend2 db 'S  SALIDA',0
 ui_legend3 db 'X  TRAMPA',0
 ui_coins_label db 'MONEDAS RESTANTES',0
-ui_win_title db 'L A B E R I N T O  S U P E R A D O',0
+ui_win_title db '*** VICTORIA ***',0
 ui_win_msg db 'Encontraste la salida. Buen recorrido.',0
-ui_lose_title db 'F I N  D E  L A  P A R T I D A',0
+ui_lose_title db '--- GAME OVER ---',0
 ui_lose_msg db 'Se agotaron tus vidas. Intentalo otra vez.',0
 ui_pause_title db 'P A U S A',0
 ui_pause_msg db 'Tu recorrido te espera.',0
 ui_final_keys db 'R: reiniciar   M/Q: menu   ESC: salir',0
 ui_status_keys db 'Partida terminada: R reinicia conservando tu record.',0
 ui_pause_keys db 'P/ENTER: continuar   Q/ESC: menu',0
+; Dibujos ASCII pequenos: se reutiliza ui_text, sin sprites ni graficos externos.
+ui_torch1 db ' /\ ',0
+ui_torch2 db '(##)',0
+ui_torch3 db ' || ',0
+ui_torch4 db '[__]',0
+ui_cup1 db '\====/',0
+ui_cup2 db ' \__/ ',0
+ui_cup3 db '  ||  ',0
+ui_cup4 db ' _||_ ',0
+ui_skull1 db ' .--. ',0
+ui_skull2 db '(o  o)',0
+ui_skull3 db ' |==| ',0
+ui_skull4 db ' /  \ ',0
 ui_number_buffer db '00000',0
 
 ui_init proc near
@@ -268,7 +281,15 @@ ui_menu_art proc near
     mov cx,1645h
     mov bl,09h
     call ui_box
-    UI_LABEL 4, 23, ui_logo1, 0Bh
+    UI_LABEL 5, 14, ui_torch1, 0Eh
+    UI_LABEL 6, 14, ui_torch2, 0Ch
+    UI_LABEL 7, 14, ui_torch3, 08h
+    UI_LABEL 8, 14, ui_torch4, 09h
+    UI_LABEL 5, 62, ui_torch1, 0Eh
+    UI_LABEL 6, 62, ui_torch2, 0Ch
+    UI_LABEL 7, 62, ui_torch3, 08h
+    UI_LABEL 8, 62, ui_torch4, 09h
+    UI_LABEL 4, 23, ui_logo1, 09h
     UI_LABEL 5, 23, ui_logo2, 0Bh
     UI_LABEL 6, 23, ui_logo3, 0Fh
     UI_LABEL 7, 23, ui_logo4, 0Bh
@@ -293,7 +314,7 @@ ui_menu proc near
     UI_LABEL 0, 3, ui_project, 30h
     call ui_menu_art
     UI_LABEL 9, 30, ui_tag, 0Fh
-    UI_LABEL 12, 26, ui_start, 0Ah
+    UI_LABEL 12, 26, ui_start, 0Bh
     UI_LABEL 14, 26, ui_exit, 07h
     UI_LABEL 18, 15, ui_goal, 07h
     UI_LABEL 20, 17, ui_rules, 08h
@@ -320,7 +341,7 @@ ui_board proc near
     mov bl,0Bh
     call ui_box
     mov dx,0430h
-    mov cx,154Bh
+    mov cx,144Bh
     mov bl,09h
     call ui_box
     UI_LABEL 4, 7, ui_level, 0Fh
@@ -368,7 +389,7 @@ ui_map_paint:
     mov dl, [jugador_x]
     shl dl, 1
     add dl, MAP_LEFT
-    mov al, '@'
+    mov al, 2              ; Muneco CP437: carita, sin cambiar el mapa
     mov bl, 3Fh
     mov cx, 1
     call ui_fill
@@ -445,11 +466,19 @@ ui_end_screen proc near
     je ui_end_pause
     cmp al, 1
     je ui_end_win
-    UI_LABEL 7, 23, ui_lose_title, 0Ch
+    UI_LABEL 6, 19, ui_skull1, 0Bh
+    UI_LABEL 7, 19, ui_skull2, 0Bh
+    UI_LABEL 8, 19, ui_skull3, 0Bh
+    UI_LABEL 9, 19, ui_skull4, 0Bh
+    UI_LABEL 7, 31, ui_lose_title, 0Ch
     UI_LABEL 10, 19, ui_lose_msg, 07h
     jmp ui_end_common
 ui_end_win:
-    UI_LABEL 7, 23, ui_win_title, 0Ah
+    UI_LABEL 6, 19, ui_cup1, 0Eh
+    UI_LABEL 7, 19, ui_cup2, 0Eh
+    UI_LABEL 8, 19, ui_cup3, 0Eh
+    UI_LABEL 9, 19, ui_cup4, 0Eh
+    UI_LABEL 7, 31, ui_win_title, 0Ah
     UI_LABEL 10, 20, ui_win_msg, 07h
     jmp ui_end_common
 ui_end_pause:
