@@ -18,6 +18,12 @@ MAP_LEFT equ 5
 
 ui_title db 'M A Z E  /  8 0 8 6',0
 ui_tag db 'ENCUENTRA TU CAMINO',0
+ui_logo1 db '##   ##   ###   ######  #######',0
+ui_logo2 db '### ###  ## ##      ##  ##     ',0
+ui_logo3 db '## # ##  #####    ##    #####  ',0
+ui_logo4 db '##   ##  ## ##  ######  #######',0
+ui_level db 'SECTOR 01 / EL LABERINTO',0
+ui_end_badge db '[  FIN DEL RECORRIDO  ]',0
 ui_project db 'EIF205  /  ARQUITECTURA DE COMPUTADORAS',0
 ui_start db '[1]  ENTRAR AL LABERINTO',0
 ui_exit db '[ESC]  SALIR',0
@@ -186,6 +192,97 @@ ui_clear proc near
     ret
 ui_clear endp
 
+; Marco de doble linea CP437. DH/DL esquina superior, CH/CL inferior, BL color.
+ui_box proc near
+    push ax
+    push cx
+    push dx
+    push si
+    push di
+    push bp
+    xor ax,ax
+    mov al,ch
+    mov bp,ax
+    mov al,cl
+    mov di,ax
+    sub al,dl
+    inc ax
+    mov si,ax
+    mov cx,si
+    mov al,205
+    call ui_fill
+    push dx
+    mov ax,bp
+    mov dh,al
+    mov al,205
+    call ui_fill
+    pop dx
+    push dx
+ui_box_sides:
+    mov cx,1
+    mov al,186
+    call ui_fill
+    push dx
+    mov ax,di
+    mov dl,al
+    mov al,186
+    call ui_fill
+    pop dx
+    inc dh
+    mov ax,bp
+    cmp dh,al
+    jbe ui_box_sides
+    pop dx
+    mov al,201
+    call ui_fill
+    push dx
+    mov ax,di
+    mov dl,al
+    mov al,187
+    call ui_fill
+    mov ax,bp
+    mov dh,al
+    mov al,188
+    call ui_fill
+    pop dx
+    mov ax,bp
+    mov dh,al
+    mov al,200
+    call ui_fill
+    pop bp
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop ax
+    ret
+ui_box endp
+
+ui_menu_art proc near
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    mov dx,020Ah
+    mov cx,1645h
+    mov bl,09h
+    call ui_box
+    UI_LABEL 4, 23, ui_logo1, 0Bh
+    UI_LABEL 5, 23, ui_logo2, 0Bh
+    UI_LABEL 6, 23, ui_logo3, 0Fh
+    UI_LABEL 7, 23, ui_logo4, 0Bh
+    mov dx,0B16h
+    mov cx,0F39h
+    mov bl,0Bh
+    call ui_box
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+ui_menu_art endp
 ui_menu proc near
     push ax
     push bx
@@ -194,8 +291,8 @@ ui_menu proc near
     push si
     call ui_clear
     UI_LABEL 0, 3, ui_project, 30h
-    UI_LABEL 6, 29, ui_title, 0Bh
-    UI_LABEL 8, 30, ui_tag, 0Fh
+    call ui_menu_art
+    UI_LABEL 9, 30, ui_tag, 0Fh
     UI_LABEL 12, 26, ui_start, 0Ah
     UI_LABEL 14, 26, ui_exit, 07h
     UI_LABEL 18, 15, ui_goal, 07h
@@ -218,7 +315,16 @@ ui_board proc near
     push si
     call ui_clear
     UI_LABEL 0, 3, ui_title, 30h
-    UI_LABEL 3, 5, ui_goal, 07h
+    mov dx,0403h
+    mov cx,152Eh
+    mov bl,0Bh
+    call ui_box
+    mov dx,0430h
+    mov cx,154Bh
+    mov bl,09h
+    call ui_box
+    UI_LABEL 4, 7, ui_level, 0Fh
+    UI_LABEL 2, 5, ui_goal, 07h
     lea si, mapa
     mov dh, MAP_TOP
 ui_map_row:
@@ -237,17 +343,17 @@ ui_map_cell:
     mov al, ' '
     jmp ui_map_paint
 ui_map_wall:
-    mov al, 219
-    mov bl, 09h
+    mov al, 177
+    mov bl, 19h
     jmp ui_map_paint
 ui_map_exit:
-    mov bl, 0Ah
+    mov bl, 2Fh
     jmp ui_map_paint
 ui_map_coin:
     mov bl, 0Eh
     jmp ui_map_paint
 ui_map_trap:
-    mov bl, 0Ch
+    mov bl, 4Eh
 ui_map_paint:
     mov cx, 2
     call ui_fill
@@ -263,7 +369,7 @@ ui_map_paint:
     shl dl, 1
     add dl, MAP_LEFT
     mov al, '@'
-    mov bl, 0Fh
+    mov bl, 3Fh
     mov cx, 1
     call ui_fill
     call ui_hud
@@ -288,26 +394,26 @@ ui_hud proc near
     mov dx, 0933h
     mov bl, 0Fh
     call ui_number
-    UI_LABEL 11, 51, ui_record_label, 07h
+    UI_LABEL 10, 51, ui_record_label, 07h
     mov ax, [record_max]
-    mov dx, 0C33h
+    mov dx, 0B33h
     mov bl, 0Eh
     call ui_number
-    UI_LABEL 14, 51, ui_vidas_label, 07h
+    UI_LABEL 12, 51, ui_vidas_label, 07h
     xor ax, ax
     mov al, [vidas]
-    mov dx, 0F33h
+    mov dx, 0D33h
     mov bl, 0Ah
     call ui_number
-    UI_LABEL 17, 51, ui_moves_label, 07h
+    UI_LABEL 14, 51, ui_moves_label, 07h
     mov ax, [movimientos]
-    mov dx, 1233h
+    mov dx, 0F33h
     mov bl, 0Fh
     call ui_number
-    UI_LABEL 19, 51, ui_coins_label, 07h
+    UI_LABEL 17, 51, ui_coins_label, 07h
     xor ax, ax
     mov al, [monedas]
-    mov dx, 1433h
+    mov dx, 1233h
     mov bl, 0Eh
     call ui_number
     UI_LABEL 21, 51, ui_legend1, 0Fh
@@ -329,16 +435,21 @@ ui_end_screen proc near
     push dx
     push si
     call ui_clear
+    mov dx,0310h
+    mov cx,1540h
+    mov bl,0Bh
+    call ui_box
+    UI_LABEL 4, 28, ui_end_badge, 0Bh
     UI_LABEL 0, 3, ui_title, 30h
     cmp al, 0
     je ui_end_pause
     cmp al, 1
     je ui_end_win
-    UI_LABEL 7, 21, ui_lose_title, 0Ch
+    UI_LABEL 7, 23, ui_lose_title, 0Ch
     UI_LABEL 10, 19, ui_lose_msg, 07h
     jmp ui_end_common
 ui_end_win:
-    UI_LABEL 7, 21, ui_win_title, 0Ah
+    UI_LABEL 7, 23, ui_win_title, 0Ah
     UI_LABEL 10, 20, ui_win_msg, 07h
     jmp ui_end_common
 ui_end_pause:

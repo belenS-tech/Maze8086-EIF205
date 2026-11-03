@@ -51,7 +51,7 @@ el programa sigue abierto. **No se guarda en disco al cerrar el programa.**
 3. Guardar el COM como `build/MAZE.COM`, reemplazando el binario anterior.
 4. Cerrar la partida anterior de DOSBox y volver a ejecutar `JUGAR.bat`.
 
-EMU8086 4.08 compilo esta version en cuatro pasadas: **2720 bytes**.
+El juego se compila como COM con EMU8086 4.08.
 La ejecucion se verifico en DOSBox-X 2026.10.01. Los INC usan saltos CRLF.
 EMU8086 importa las macros `DEFINE_INTERFACE`, `DEFINE_MOVIMIENTO` y
 `DEFINE_JUEGO`; cada una se invoca una vez desde el archivo principal.
@@ -84,23 +84,12 @@ y DOS INT 21h devuelve el control al sistema al salir. El mapa se copia con
 DS:SI y ES:DI, preservando registros y ES. No utiliza dispositivos exclusivos
 del emulador de EMU8086 ni instrucciones posteriores al 8086.
 
-## Pruebas
+## Pruebas manuales y entrega
 
-Ver `tests/BITACORA.md`. El arnes llama al codigo maquina real de MAZE.COM,
-usando las direcciones de su tabla de simbolos, y se ejecuta en DOSBox-X.
-No sustituye las rutinas por una simulacion en Python.
-
-Para repetirlo, guardar tambien la tabla `MAZE.COM.symbol` de la misma
-compilacion, y ejecutar desde la raiz del proyecto:
-
-```text
-python tests/preparar_pruebas.py
-C:\emu8086\fasm\FASM.EXE build\TEST.ASM build\TEST.COM
-```
-
-En DOSBox, montar `build` y ejecutar `TEST.COM`. FASM solo ensambla el arnes;
-el juego que este comprueba sigue siendo el COM producido por EMU8086.
-Resultado verificado: **PASS: 70 comprobaciones sobre el COM de EMU8086**.
-
-El informe tecnico extenso y la presentacion del grupo deben completarse
-con su explicacion, conclusiones y evidencias; este README no los reemplaza.
+Las pruebas se realizan sobre el ejecutable de EMU8086 en DOSBox-X, con el
+teclado y observacion del marcador y los estados. No se requieren Python,
+FASM, programas de prueba ni herramientas adicionales para comprobar el juego.
+Ver `docs/GUIA_EVIDENCIAS.md`, `docs/EXPLICACION_CODIGO.md` y
+`tests/BITACORA.md`. El informe editable se encuentra en `docs/Informe_tecnico.docx`.
+Las capturas deben guardarse en `evidencias` y asociarse a sus casos de prueba.
+El informe requiere completar integrantes, profesor y las evidencias del grupo.
