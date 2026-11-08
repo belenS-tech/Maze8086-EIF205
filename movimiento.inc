@@ -140,7 +140,12 @@ limpiar_destino:
 
 revisar_salida:
     cmp monedas,0
-    jne fin_movimiento
+    je salida_abierta
+    ; Faltan monedas: el jugador no se mueve y se avisa con un sonido.
+    call sonido_bloqueo
+    jmp fin_movimiento
+
+salida_abierta:
 
     mov jugador_x,bl
     mov ax,si
