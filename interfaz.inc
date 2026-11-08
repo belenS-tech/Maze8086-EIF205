@@ -39,6 +39,9 @@ ui_legend1 db 2,'  TU JUGADOR',0
 ui_legend2 db 'S  SALIDA',0
 ui_legend3 db 'X  TRAMPA',0
 ui_coins_label db 'MONEDAS RESTANTES',0
+ui_time_label db 'TIEMPO (SEG)',0
+ui_time_short db 'TIEMPO',0
+ui_bonus db 'Bono al ganar: 120 menos los segundos usados.',0
 ui_win_title db '*** VICTORIA ***',0
 ui_win_msg db 'Encontraste la salida. Buen recorrido.',0
 ui_lose_title db '--- GAME OVER ---',0
@@ -317,6 +320,7 @@ ui_menu proc near
     UI_LABEL 12, 26, ui_start, 0Bh
     UI_LABEL 14, 26, ui_exit, 07h
     UI_LABEL 18, 15, ui_goal, 07h
+    UI_LABEL 19, 17, ui_bonus, 07h
     UI_LABEL 20, 17, ui_rules, 08h
     UI_LABEL 24, 3, ui_controls, 17h
     pop si
@@ -431,12 +435,14 @@ ui_hud proc near
     mov dx, 0F33h
     mov bl, 0Fh
     call ui_number
-    UI_LABEL 17, 51, ui_coins_label, 07h
+    UI_LABEL 16, 51, ui_coins_label, 07h
     xor ax, ax
     mov al, [monedas]
-    mov dx, 1233h
+    mov dx, 1133h
     mov bl, 0Eh
     call ui_number
+    UI_LABEL 18, 51, ui_time_label, 07h
+    call ui_tiempo
     UI_LABEL 21, 51, ui_legend1, 0Fh
     UI_LABEL 22, 51, ui_legend2, 0Ah
     UI_LABEL 23, 51, ui_legend3, 0Ch
@@ -446,6 +452,22 @@ ui_hud proc near
     pop ax
     ret
 ui_hud endp
+
+; Dibuja solo los segundos del marcador (fila 19, columna 51). La partida
+; la llama cada segundo sin redibujar el tablero completo.
+ui_tiempo proc near
+    push ax
+    push bx
+    push dx
+    mov ax, [segundos]
+    mov dx, 1333h
+    mov bl, 0Bh
+    call ui_number
+    pop dx
+    pop bx
+    pop ax
+    ret
+ui_tiempo endp
 
 ; AL=0 pausa, AL=1 victoria, otro valor derrota.
 ; Solo dibuja; el integrante 3 decide el estado y procesa el teclado.
@@ -489,6 +511,11 @@ ui_end_common:
     mov ax, [puntos]
     mov dx, 0E17h
     mov bl, 0Fh
+    call ui_number
+    UI_LABEL 13, 35, ui_time_short, 07h
+    mov ax, [segundos]
+    mov dx, 0E23h
+    mov bl, 0Bh
     call ui_number
     UI_LABEL 13, 47, ui_record_label, 07h
     mov ax, [record_max]

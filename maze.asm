@@ -1,21 +1,33 @@
-; MAZE8086 - Integracion de interfaz, movimiento y reglas del equipo.
-; Compilar como COM en EMU8086 y ejecutar MAZE.COM en DOSBox.
+; MAZE8086 - Integracion de interfaz, movimiento, reglas, cronometro y sonido.
+; Compilar como COM en EMU8086 y ejecutar MAZE.COM en DOSBox-X.
 org 100h
-jmp inicio
+jmp inicio              ; 3 bytes: los datos empiezan en 0103h
 
 ANCHO equ 20
 ALTO equ 15
 TOTAL equ ANCHO*ALTO
 MONEDAS_TOTAL equ 5
+TIEMPO_BONO equ 120     ; segundos de referencia para el bono de tiempo
+TICKS_MAX_SALTO equ 91  ; 5 s; un salto mayor se ignora (medianoche o emulador detenido)
 
-; Datos compartidos. Coordenadas desde cero y puntuacion sin signo.
+; Alineacion: un byte de relleno deja todas las variables word en
+; direcciones pares (0104h en adelante). El 8086 lee una word par en un
+; solo acceso al bus; una word impar necesita dos.
+relleno_alineacion db 0
+
+; Variables de 16 bits, sin signo, en direcciones pares.
+puntos dw 0
+record_max dw 0
+movimientos dw 0
+segundos dw 0           ; tiempo de la partida mostrado en pantalla
+ticks_partida dw 0      ; ticks del BIOS acumulados en estado de partida
+tick_anterior dw 0      ; ultima lectura de INT 1Ah (palabra baja)
+
+; Variables de 8 bits. Coordenadas desde cero.
 jugador_x db 1
 jugador_y db 1
 vidas db 3
 monedas db MONEDAS_TOTAL
-puntos dw 0
-record_max dw 0
-movimientos dw 0
 ; 0 menu, 1 jugando, 2 victoria, 3 derrota, 4 pausa.
 estado db 0
 
@@ -41,9 +53,11 @@ mapa db TOTAL dup(' ')
 include 'interfaz.inc'
 include 'movimiento.inc'
 include 'juego.inc'
+include 'sonido.inc'
 DEFINE_INTERFACE
 DEFINE_MOVIMIENTO
 DEFINE_JUEGO
+DEFINE_SONIDO
 
 inicio:
     push cs
@@ -51,7 +65,8 @@ inicio:
     cld
     call ui_init
 
-; Cada manejador espera teclado sin consumir CPU en bucles de retraso.
+; El menu, la pausa y los finales esperan teclado con INT 16h/00h.
+; La partida consulta el teclado sin bloquear para actualizar el reloj.
 mostrar_menu:
     mov estado,0
     call ui_menu
@@ -70,8 +85,13 @@ nueva_partida:
 dibujar_partida:
     call ui_board
 esperar_jugada:
+    ; Mientras no hay tecla, el reloj sigue avanzando en pantalla.
+    call actualizar_tiempo
+    mov ah,1
+    int 16h                 ; ZF=1: no hay tecla en el buffer
+    jz esperar_jugada
     mov ah,0
-    int 16h
+    int 16h                 ; retirar la tecla del buffer
     call procesar_movimiento
     cmp estado,0
     jne comprobar_pausa
@@ -111,6 +131,7 @@ pausa_comprobar_p:
     jne esperar_pausa
 continuar_partida:
     mov estado,1
+    call iniciar_reloj      ; el tiempo en pausa no se cuenta
     jmp dibujar_partida
 
 esperar_final:
