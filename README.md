@@ -96,8 +96,14 @@ funcion 01h consulta el teclado sin bloquear y INT 1Ah funcion 00h lee los
 ticks del BIOS (18.2 por segundo) para el cronometro y la duracion de los
 sonidos. DOS INT 21h devuelve el control al sistema al salir.
 
-## Pruebas
+## Documentacion y pruebas
 
-Las pruebas se realizan con el ejecutable en DOSBox-X, observando el
-marcador y los estados. El informe tecnico contiene la bitacora de pruebas
-y las capturas de cada caso.
+| Archivo | Contenido |
+| --- | --- |
+| `docs/Informe Tecnico.pdf` | Informe tecnico final (tambien en `.docx`) |
+| `tests/BITACORA.md` | Bitacora de pruebas y registro de errores |
+| `docs/GUIA EVIDENCIAS.md` | Teclas para reproducir cada prueba |
+| `evidencias/` | Capturas E01 a E28 con su indice |
+
+Las pruebas son manuales, con el teclado, en el emulador de EMU8086 y en
+DOSBox, observando el marcador y los estados.
